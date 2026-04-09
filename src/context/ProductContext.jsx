@@ -9,24 +9,13 @@ export const ProductProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
 
-  const BASE_URL = "https://dummyjson.com/products";
-
+  const BASE_URL = "http://localhost:3000/products";
   // FETCH PRODUCTS
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const res = await axios.get(BASE_URL);
-
-      let apiProducts = res.data.products;
-
-      const localData = JSON.parse(localStorage.getItem("products")) || [];
-
-      const merged = apiProducts.map((p) => {
-        const local = localData.find((lp) => lp.id === p.id);
-        return local ? local : p;
-      });
-
-      setProducts(merged);
+      setProducts(res.data);
     } catch (err) {
       setError("Error fetching products");
     } finally {
@@ -37,19 +26,19 @@ export const ProductProvider = ({ children }) => {
   // DELETE
   const deleteProduct = async (id) => {
     await axios.delete(`${BASE_URL}/${id}`);
-    setProducts(products.filter((p) => p.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
   // ADD
   const addProduct = async (product) => {
-    const res = await axios.post(`${BASE_URL}/add`, product);
-    setProducts([...products, res.data]);
+    const res = await axios.post(BASE_URL, product);
+    setProducts((prev) => [...prev, res.data]);
   };
 
   // UPDATE
   const updateProduct = async (id, updated) => {
     const res = await axios.put(`${BASE_URL}/${id}`, updated);
-    setProducts(products.map(p => p.id === id ? res.data : p));
+    setProducts((prev) => prev.map((p) => (p.id === id ? res.data : p)));
   };
 
   useEffect(() => {
